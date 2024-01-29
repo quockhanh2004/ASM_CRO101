@@ -1,26 +1,52 @@
 import LinearGradient from 'react-native-linear-gradient';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import React, { useState, useContext } from 'react';
-
+import { AppContext } from '../main/AppContext';
 const ItemProduct = (props) => {
     const { navigation } = props;
     const { product } = props;
+    const { cart, setCart } = useContext(AppContext);
+    const addToCart = (newItem) => {
+        // Kiểm tra xem có sản phẩm có cùng _id trong giỏ hàng chưa
+        const existingItem = cart.find(item => item._id === newItem._id);
+      
+        if (existingItem) {
+          // Nếu đã có, tăng giá trị của biến number lên 1
+          const updatedCart = cart.map(item => {
+            if (item._id === newItem._id) {
+              return { ...item, number: item.number + 1 };
+            }
+            return item;
+          });
+      
+          setCart(updatedCart);
+        } else {
+          // Nếu chưa có, thêm sản phẩm mới vào giỏ hàng với number là 1
+          setCart(prevCart => [...prevCart, { _id: newItem._id, number: 1 }]);
+        }
+      
+        Alert.alert('Thêm vào giỏ hàng thành công');
+      };
+      
+
+
     // const product = route.params?.data?.product;
     return (
+
         <View style={[styles.Container, { backgroundColor: '#000' }]}>
             <TouchableOpacity onPress={() => { navigation.navigate('Payment', { data: { product } }) }}>
                 <LinearGradient
                     colors={['#252A32', 'rgba(38, 43, 51, 0)']}
                     style={styles.linearGradient}>
                     <View style={styles.top}>
-                        <Image style={styles.image} source={product?.image} />
+                        <Image style={styles.image} source={{ uri: product?.image }} />
                         {product?.isRating && <View style={styles.danhGia}>
                             <Image source={require('../../../assets/images/ic_star.png')} />
                             <Text style={styles.diemDanhGia}>{product?.rating}</Text>
                         </View>}
                     </View>
                     <View style={styles.bottom}>
-                        <Text style={styles.name}>{product?.name}</Text>
+                        <Text style={styles.name} numberOfLines={1}>{product?.name}</Text>
                         <Text style={styles.info}>{product?.info}</Text>
                         <View style={styles.priceContainer}>
 
@@ -29,7 +55,7 @@ const ItemProduct = (props) => {
                                 {product?.price}
                             </Text>
 
-                            <TouchableOpacity style={styles.btnAdd} onPress={() => navigation.navigate('Payment')}>
+                            <TouchableOpacity style={styles.btnAdd} onPress={() => addToCart(product)}>
                                 <Image source={require('../../../assets/images/btn_add.png')} />
                             </TouchableOpacity>
                         </View>

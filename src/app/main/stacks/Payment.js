@@ -1,15 +1,37 @@
-import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity } from 'react-native';
-import React from 'react';
-
+import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, FlatList, Alert } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { AppContext } from '../AppContext';
 const Payment = (props) => {
   const { navigation } = props;
   const { route } = props;
   const product = route.params?.data?.product;
-
+  const { cart, setCart } = useContext(AppContext);
+  const addToCart = (newItem) => {
+    // Kiểm tra xem có sản phẩm có cùng _id trong giỏ hàng chưa
+    const existingItem = cart.find(item => item._id === newItem._id);
+  
+    if (existingItem) {
+      // Nếu đã có, tăng giá trị của biến number lên 1
+      const updatedCart = cart.map(item => {
+        if (item._id === newItem._id) {
+          return { ...item, number: item.number + 1 };
+        }
+        return item;
+      });
+  
+      setCart(updatedCart);
+    } else {
+      // Nếu chưa có, thêm sản phẩm mới vào giỏ hàng với number là 1
+      setCart(prevCart => [...prevCart, { _id: newItem._id, number: 1 }]);
+    }
+  
+    Alert.alert('Thêm vào giỏ hàng thành công');
+  };
+  
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="transparent" translucent />
-      <Image source={product?.image} style={styles.image} />
+      <Image source={{ uri: product?.image }} style={styles.image} />
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -34,7 +56,7 @@ const Payment = (props) => {
 
             <View style={styles.ratingC}>
               <Image style={styles.imgRating} source={require('../../../../assets/images/ic_star.png')} />
-              <Text style={styles.txtRating}>{product?.rating}</Text>
+              <Text style={styles.txtRating}>{product?.rating} <Text style={styles.numberRating}>({product?.voting})</Text></Text>
             </View>
           </View>
         </View>
@@ -60,6 +82,24 @@ const Payment = (props) => {
 
         </View>
       </View>
+      <View style={styles.body}>
+        <Text style={styles.Description}>Description</Text>
+        <Text style={styles.textBody}>{product?.description}</Text>
+        {product?.size && <Text style={styles.textSize}>Size</Text>
+
+        }
+      </View>
+      <View style={styles.payMent}>
+        <View style={styles.Paymentleft}>
+          <Text style={styles.textPrice}>Price</Text>
+          <Text style={styles.txtPrice}><Text style={styles.dola}>$ </Text>{product?.price}</Text>
+        </View>
+        <View style={styles.Paymentright}>
+          <TouchableOpacity style={styles.btnCart} onPress={() => addToCart(product)}>
+            <Text style={styles.txtCart}>Add to Cart</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };
@@ -67,6 +107,97 @@ const Payment = (props) => {
 export default Payment;
 
 const styles = StyleSheet.create({
+  btnCart: {
+    width: '100%',
+    height: 60,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#D17842',
+    borderRadius: 20,
+  },
+  Paymentright: {
+    display: 'flex',
+    width: '70%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  txtPrice: {
+    fontSize: 20,
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  dola: {
+    color: '#D17842',
+  },
+  textPrice: {
+    width: '100%',
+    height: 'auto',
+    color: '#aeaeae',
+    textAlign: 'center',
+    fontFamily: 'Poppins',
+    fontSize: 12,
+    fontWeight: 'bold',
+    alignItems: 'center',
+  },
+  Paymentleft: {
+    width: '30%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  payMent: {
+    width: '100%',
+    height: 60,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    bottom: 0,
+    position: 'absolute',
+  },
+  textSize: {
+    color: '#AEAEAE',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
+    marginTop: 8,
+  },
+  textBody: {
+    color: '#fff',
+    fontSize: 12,
+    marginTop: 15,
+    fontFamily: 'Poppins',
+    fontWeight: '400',
+  },
+  Description: {
+    color: '#AEAEAE',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
+    lineHeight: 20,
+  },
+  body: {
+    top: 437,
+    height: 'auto',
+    paddingHorizontal: 18.5,
+    display: 'flex',
+    flexDirection: 'column',
+    paddingVertical: 19.8,
+  },
+  numberRating: {
+    color: '#AEAEAE',
+    fontSize: 10,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
+    lineHeight: 20,
+  },
   btnBottom: {
     backgroundColor: '#141921',
     width: 131,
@@ -81,10 +212,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Poppins',
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: 'bold',
     lineHeight: 20,
-    textAlign: 'center',
     marginStart: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imgRating: {
     width: 22.29,
@@ -93,6 +225,7 @@ const styles = StyleSheet.create({
   ratingC: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 25.43,
   },
   rating_buttonContainer: {

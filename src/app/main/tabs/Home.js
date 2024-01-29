@@ -1,74 +1,55 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, StatusBar, TextInput, ScrollView, FlatList } from 'react-native'
-import React, { useState } from 'react'
-
+import React, { useState, useEffect, useCallback, useContext } from 'react'
+import AxiosInstance from '../../helper/AxiosInstance'
 import ItemProduct from '../../item/ItemProduct'
-
-const loai = [
-  { text: 'All' },
-  { text: 'Cappuccino' },
-  { text: 'Espresso' },
-  { text: 'Americano' },
-  { text: 'Macchiato' },
-]
-
-const product = [
-  {
-    name: 'Cappuccino',
-    info: 'With Steamed Milk',
-    image: require('../../../../assets/images/caffeeProduct.png'),
-    price: 4.20,
-    rating: 4.5,
-    isRating: true,
-  },
-  {
-    name: 'Espresso',
-    info: 'With Foam',
-    image: require('../../../../assets/images/espressoProduct.png'),
-    price: 4.2,
-    rating: 4.2,
-    isRating: true,
-  },
-  {
-    name: 'Espresso',
-    info: 'With Foam',
-    image: require('../../../../assets/images/caffeeProduct.png'),
-    price: 4.2,
-    rating: 4.2,
-    isRating: true,
-  },
-];
-const beans = [
-  {
-    name: 'Robusta Beans',
-    info: 'Medium Roasted',
-    image: require('../../../../assets/images/robustaBean.jpg'),
-    price: 4.20,
-    rating: 4.5,
-    isRating: false,
-  },
-  {
-    name: 'Cappuccino',
-    info: 'With Steamed Milk',
-    image: require('../../../../assets/images/robustaBean.jpg'),
-    price: 4.2,
-    rating: 0,
-    isRating: false,
-  },
-  {
-    name: 'Espresso',
-    info: 'With Foam',
-    image: require('../../../../assets/images/robustaBean.jpg'),
-    price: 4.2,
-    rating: 0,
-    isRating: false,
-  },
-];
-
+import { AppContext } from '../AppContext'
 const Home = (props) => {
   const { navigation } = props;
   const [isSearch, setIsSearch] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(0);
+  const [products, setProducts] = useState([]);
+  const [ cart, setCart ] = useState(useContext(AppContext));
+  const [numberCart, setNumberCart] = useState(cart.length);
+  //danh mục dc chọn
+  const [selectedCategories, setSelectedCategories] = useState(null);
+
+  //lấy danh sách danh mục
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const getCategories = async () => {
+      try {
+        const response = await AxiosInstance().get('/categories');
+        // console.log('Lấy thành công: ', response);
+        setCategories(response.categories);
+        setSelectedCategories(response.categories[0]);
+      } catch (error) {
+        console.log('Lấy danh sách danh mục lỗi', error);
+      }
+    }
+    getCategories();
+  }, []);
+
+  //lấy danh sách sản phẩm theo danh mục dc chọn
+
+  useCallback(useEffect(() => {
+    const getProducts = async () => {
+      try {
+        // if (selectedCategories == null) return;
+        // console.log(selectedCategories?._id);
+        const response = await AxiosInstance().get(`/products?category=${selectedCategories?._id}`);
+        // console.log('Lấy thành công: ', response);
+        setProducts(response.products);
+      } catch (error) {
+        console.log('Lấy danh sách sản phẩm lỗi', error);
+        // console.log(selectedCategories?._id);
+      }
+    }
+    getProducts();
+  }, [selectedCategories]));
+  //lấy danh sách sản phẩm theo danh mục
+
+
 
   const find = (text) => {
     setSearch(text);
@@ -77,6 +58,15 @@ const Home = (props) => {
     } else {
       setIsSearch(true);
     }
+  }
+
+  const selectCategory = (item, index) => {
+    // console.log(index);
+    setSelectedCategories(item);
+    setSelected(index);
+    setProducts([]);
+    // console.log(item?._id);
+    // setProducts(item.products);
   }
 
   return (
@@ -120,15 +110,15 @@ const Home = (props) => {
           <ScrollView
             horizontal={true}
             showsHorizontalScrollIndicator={false}>
-            {loai.map((item, index) => (
+            {categories.map((item, index) => (
 
               <TouchableOpacity
                 key={index}
                 style={styles.itemLoai}
-                onPress={() => setSelected(index)}>
+                onPress={() => selectCategory(item, index)}>
 
                 <Text style={[styles.txtLoai, index === selected && styles.txtLoaiSeleted]}>
-                  {item.text}
+                  {item?.name}
                 </Text>
 
                 {index == selected &&
@@ -141,7 +131,7 @@ const Home = (props) => {
 
         <View style={styles.listCoffee}>
           <FlatList
-            data={product}
+            data={products}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
@@ -154,17 +144,17 @@ const Home = (props) => {
           />
         </View>
 
-        <Text style={styles.textCoffeeBean}>Coffee beans</Text>
+           <Text style={styles.textCoffeeBean}>Coffee beans</Text>
 
-        <View style={styles.listCoffeeBean}>
+       <View style={styles.listCoffeeBean}>
           <FlatList
-            data={beans}
+            data={products}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <ItemProduct
-              navigation={navigation}
-              product={item}
+                navigation={navigation}
+                product={item}
               />
             )}
             keyExtractor={(item, index) => index.toString()}

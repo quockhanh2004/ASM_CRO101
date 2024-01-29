@@ -1,9 +1,9 @@
-import { View, Text, Image } from 'react-native'
-import React from 'react'
+import { View, Text, Image, StyleSheet } from 'react-native'
+import React, { useContext, useState } from 'react'
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-
+import { AppContext } from './AppContext'
 // tabs
 import Home from './tabs/Home'
 import Cart from './tabs/Cart'
@@ -11,8 +11,9 @@ import Favorite from './tabs/Favorite'
 import Notification from './tabs/Notification'
 
 const tabScreenOptions = ({ route }) => {
+    const { cart } = useContext(AppContext);
+    // console.log(cart);
     return {
-
         headerShown: false,
         tabBarStyle: {
             backgroundColor: '#0C0F14'
@@ -26,9 +27,21 @@ const tabScreenOptions = ({ route }) => {
                 return <Image source={require('../../../assets/images/ic_home_default.png')} />
             } else if (route.name == 'Cart') {
                 if (focused) {
-                    return <Image source={require('../../../assets/images/ic_cart.png')} />
+                    return (
+                        <View>
+                            <Image source={require('../../../assets/images/ic_cart.png')} />
+                            <Text style={styles.Cart}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
+                        </View>
+
+                    );
                 }
-                return <Image source={require('../../../assets/images/ic_cart_default.png')} />
+                return (
+                    <View>
+                        <Image source={require('../../../assets/images/ic_cart_default.png')} />
+                        <Text style={styles.Cart}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
+                    </View>
+
+                );
             }
             else if (route.name == 'Favorite') {
                 if (focused) {
@@ -49,7 +62,8 @@ const tabScreenOptions = ({ route }) => {
                 }
             } else if (route.name == 'Cart') {
                 if (focused) {
-                    return <Text style={{ color: '#D17842' }}>Cart</Text>
+                    return (<Text style={{ color: '#D17842' }}>Cart</Text>
+                    );
                 }
             }
             else if (route.name == 'Favorite') {
@@ -69,6 +83,7 @@ const tabScreenOptions = ({ route }) => {
 
 const Tab = createBottomTabNavigator();
 const MainTabNavigation = () => {
+
     return (
         <Tab.Navigator screenOptions={tabScreenOptions}>
             <Tab.Screen name="Home" component={Home} />
@@ -99,3 +114,20 @@ const MainStackNavigation = () => {
 }
 
 export default MainStackNavigation
+
+const styles = StyleSheet.create({
+    Cart: {
+        backgroundColor: 'red',
+        width: 10,
+        height: 10,
+        borderRadius: 4,
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        color: 'white',
+        fontSize: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+    }
+})

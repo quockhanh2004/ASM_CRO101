@@ -6,7 +6,6 @@ const AxiosInstance = (contentType = 'application/json') => {
         baseURL: 'https://cro101-b166e76cc76a.herokuapp.com/'
     });
 
-    // cấu hình request gửi đi
     axiosInstance.interceptors.request.use(
         async (config) => {
             // const token = await AsyncStorage.getItem('token');

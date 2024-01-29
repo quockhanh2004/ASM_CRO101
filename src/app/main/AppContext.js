@@ -5,7 +5,7 @@ export const AppContext = createContext()
 export const AppProvider = (props) => {
     const { children } = props;
     const [cart, setCart] = useState([])
-    const [isLogin, setIsLogin] = useState(false)
+    const [isLogin, setIsLogin] = useState(true)
     return (
         <AppContext.Provider
             value={{ cart, setCart, isLogin, setIsLogin }}>
