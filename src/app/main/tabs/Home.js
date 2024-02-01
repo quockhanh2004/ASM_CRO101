@@ -1,262 +1,311 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, StatusBar, TextInput, ScrollView, FlatList } from 'react-native'
-import React, { useState, useEffect, useCallback, useContext } from 'react'
-import AxiosInstance from '../../helper/AxiosInstance'
-import ItemProduct from '../../item/ItemProduct'
-import { AppContext } from '../AppContext'
+import { StyleSheet, Text, Image, View, ScrollView, FlatList, TouchableOpacity, TextInput } from 'react-native'
+import React, { useState, useContext, useEffect, createContext } from 'react'
+import AxiosInstance from '../../helpers/AxiosInstance';
 const Home = (props) => {
-  const { navigation } = props;
-  const [isSearch, setIsSearch] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState(0);
-  const [products, setProducts] = useState([]);
-  const [ cart, setCart ] = useState(useContext(AppContext));
-  const [numberCart, setNumberCart] = useState(cart.length);
-  //danh mục dc chọn
-  const [selectedCategories, setSelectedCategories] = useState(null);
-
-  //lấy danh sách danh mục
-  const [categories, setCategories] = useState([]);
-  useEffect(() => {
-    const getCategories = async () => {
-      try {
-        const response = await AxiosInstance().get('/categories');
-        // console.log('Lấy thành công: ', response);
-        setCategories(response.categories);
-        setSelectedCategories(response.categories[0]);
-      } catch (error) {
-        console.log('Lấy danh sách danh mục lỗi', error);
-      }
-    }
-    getCategories();
-  }, []);
-
-  //lấy danh sách sản phẩm theo danh mục dc chọn
-
-  useCallback(useEffect(() => {
-    const getProducts = async () => {
-      try {
-        // if (selectedCategories == null) return;
-        // console.log(selectedCategories?._id);
-        const response = await AxiosInstance().get(`/products?category=${selectedCategories?._id}`);
-        // console.log('Lấy thành công: ', response);
-        setProducts(response.products);
-      } catch (error) {
-        console.log('Lấy danh sách sản phẩm lỗi', error);
-        // console.log(selectedCategories?._id);
-      }
-    }
-    getProducts();
-  }, [selectedCategories]));
-  //lấy danh sách sản phẩm theo danh mục
+    const { navigation } = props;
+    //biến chứa chỉ mục thay đổi
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    // danh sách danh mục 
+    const [categories, setCategories] = useState([]);
+    //danh sách sản phẩm thuộc danh mục
+    const [products, setProducts] = useState([]);
 
 
 
-  const find = (text) => {
-    setSearch(text);
-    if (text === '') {
-      setIsSearch(false);
-    } else {
-      setIsSearch(true);
-    }
-  }
-
-  const selectCategory = (item, index) => {
-    // console.log(index);
-    setSelectedCategories(item);
-    setSelected(index);
-    setProducts([]);
-    // console.log(item?._id);
-    // setProducts(item.products);
-  }
-
-  return (
-    <View style={styles.Container}>
-      <StatusBar backgroundColor={'#0C0F14'} />
-
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.btnMenu}
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <Image style={styles.imgHeader} source={require('../../../../assets/images/ic_menu.png')} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.btnMenu}
-          onPress={() => navigation.navigate('Personal')}
-        >
-          <Image style={styles.imgHeader} source={require('../../../../assets/images/ic_user.png')} />
-        </TouchableOpacity>
-      </View>
 
 
 
-      <ScrollView showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}>
-        <View style={styles.textHeader}>
-          <Text style={styles.txtHeader}>Find the best {`\n`}coffee for you</Text>
-        </View>
-
-        <View style={styles.search}>
-          {!isSearch &&
-            <Image style={styles.imgSearch} source={require('../../../../assets/images/ic_search.png')} />}
-          <TextInput
-            style={styles.textInput}
-            placeholder='Find Your Coffee...'
-            placeholderTextColor={'#52555A'}
-            onChangeText={find}
-            value={search} />
-        </View>
-        <View style={styles.listLoai}>
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}>
-            {categories.map((item, index) => (
-
-              <TouchableOpacity
-                key={index}
-                style={styles.itemLoai}
-                onPress={() => selectCategory(item, index)}>
-
-                <Text style={[styles.txtLoai, index === selected && styles.txtLoaiSeleted]}>
-                  {item?.name}
+    // lấy danh sách danh mục từ Api
+    useEffect(() => {
+        const getCategories = async () => {
+            try {
+                const response = await AxiosInstance()
+                    .get('/categories');
+                setCategories(response.categories);
+                setSelectedIndex(response.categories[0]._id)
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        getCategories();
+    }, []);
+    // hiển thị danh sách danh mục
+    const renderItemCategory = ({ item }) => {
+        const { _id, name } = item;
+        return (
+            <View>
+                <Text
+                    style={{
+                        color: _id === selectedIndex ? '#D17842' : 'white',
+                        fontSize: 14,
+                        marginLeft: 10,
+                    }}
+                    onPress={() => {
+                        setSelectedIndex(_id);
+                    }}
+                >
+                    {name}
                 </Text>
-
-                {index == selected &&
-                  <View style={styles.selectedLoai}></View>
+                {_id === selectedIndex ? (
+                    <View
+                        style={{
+                            width: 8,
+                            height: 8,
+                            backgroundColor: '#D17842',
+                            borderRadius: 4,
+                            marginLeft: 10,
+                        }}
+                    ></View>
+                ) : null}
+            </View>
+        );
+    };
+    // lấy danh sách sản phẩm theo danh mục
+    useEffect(() => {
+        const getProducts = async () => {
+            try {
+                if (!selectedIndex) {
+                    return;
                 }
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+                const response = await AxiosInstance()
+                    .get(`/products?category=${selectedIndex}`);
+                setProducts(response.products);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        getProducts();
+    }, [selectedIndex]);
+    // hiển thị danh sách sản phẩm
+    const renderItemProduct = ({ item }) => {
+        return (
+            <TouchableOpacity
+            onPress={()=> navigation.navigate('Detail',{
+                _id: item._id
+            })}
+            >
+                <View style={styles.sp}>
+                    <Image source={{ uri: item.image }} style={styles.image}></Image>
+                    <View style={styles.rating}>
+                        <Image style={{ width: 10, height: 10 }} source={require('../../../../assets/images/ic_start.png')} />
+                        <Text style={{ marginLeft: 3, color: 'white', fontSize: 10, fontWeight: 'bold' }}>{item.rating}</Text>
+                    </View>
+                    <Text style={styles.nameSp}>{item.name}</Text>
+                    <Text style={styles.titleSp}>{item.description}</Text>
+                    <View style={styles.priceSp}>
+                        <Text style={{ color: '#D17842', fontWeight: 'bold', fontSize: 14, marginStart: 13 }}>$</Text>
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14, marginStart: 5 }}>{item.price}</Text>
+                        <TouchableOpacity
+                        onPress={()=> navigation.navigate('Detail',{
+                            _id: item._id
+                        })}
+                        >
+                            <Image style={{ marginStart: 68 }} source={require('../../../../assets/images/ic_sum.png')}></Image>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        )
+    }
+    return (
+        <View style={styles.container}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+            >
+                {/* navbar */}
+                <View style={styles.bar_navigation}>
+                    <TouchableOpacity
+                        style={styles.menu_navigation}
+                        onPress={() => navigation.navigate('Setting')}
+                    >
+                        <Image source={require('../../../../assets/images/ic_menu.png')} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.menu_navigation}
+                        onPress={() => navigation.navigate('Personal')}>
+                        <Image source={require('../../../../assets/images/ic_person.png')} />
+                    </TouchableOpacity>
+                </View>
+                {/* Text chao */}
+                <View style={styles.textBar}>
+                    <Text style={styles.text}>Find the best coffee for you</Text>
+                </View>
+                {/* search */}
+                <View style={styles.searchContainer}>
+                    <Image style={{ width: 20, height: 20, }} source={require('../../../../assets/images/ic_search.png')} />
+                    <TextInput style={styles.search}
+                        placeholder='Find Your coffee...'
+                        placeholderTextColor='#828282'
+                    />
+                </View>
+                {/* Menu */}
+                <View
+                    style={{ width: '100%', height: 30, marginTop: 28, backgroundColor: '#0C0F14' }}
+                >
+                    <FlatList
+                        showsHorizontalScrollIndicator={false}
+                        horizontal={true}
+                        showsVerticalScrollIndicator={false}
+                        data={categories}
+                        renderItem={renderItemCategory}
+                        keyExtractor={item => item._id}
+                    />
+                </View>
+                {/*Products*/}
+                <View style={styles.scrollContainer}>
+                    <FlatList
+                        showsVerticalScrollIndicator={false}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        data={products}
+                        renderItem={renderItemProduct}
+                    />
+                </View>
 
-        <View style={styles.listCoffee}>
-          <FlatList
-            data={products}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <ItemProduct
-                navigation={navigation}
-                product={item}
-              />
-            )}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
+                {/* Coffee bean */}
+                <View style={styles.beanContainer}>
+                    <Text style={styles.beanText}>Coffee Beans</Text>
+                </View>
+                <View style={styles.scrollContainer2}>
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                    >
 
-           <Text style={styles.textCoffeeBean}>Coffee beans</Text>
-
-       <View style={styles.listCoffeeBean}>
-          <FlatList
-            data={products}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <ItemProduct
-                navigation={navigation}
-                product={item}
-              />
-            )}
-            keyExtractor={(item, index) => index.toString()}
-          />
+                    </ScrollView>
+                </View>
+            </ScrollView>
         </View>
-      </ScrollView>
-    </View>
-  )
+    )
 }
 
 export default Home
 
 const styles = StyleSheet.create({
-  listCoffeeBean: {
-    marginTop: 19,
-  },
-  textCoffeeBean: {
-    marginTop: 23.32,
-    color: '#fff',
-    fontFamily: 'Poppins',
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 20,
-  },
-  listCoffee: {
-    marginTop: 22,
-  },
-  txtLoaiSeleted: {
-    color: '#D17842',
-    fontFamily: 'Poppins',
-    fontSize: 14,
-  },
-  txtLoai: {
-    color: '#52555A',
-    fontFamily: 'Poppins',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  selectedLoai: {
-    width: 8,
-    height: 8,
-    backgroundColor: '#D17842',
-    borderRadius: 4,
-  },
-  itemLoai: {
-    width: 'auto',
-    marginHorizontal: 9,
-    marginTop: 28,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listLoai: {
+    rating: {
+        width: 47,
+        height: 22,
+        marginTop: 12,
+        marginStart: 90,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.60)',
+        borderTopRightRadius: 14,
+        borderBottomLeftRadius: 26
+    },
+    priceSp: {
+        width: '100%',
+        height: 28,
+        borderRadius: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 5,
 
-  },
-  textInput: {
-    marginStart: 19,
-    color: '#52555A',
-    fontFamily: 'Poppins',
-    fontWeight: '500',
-  },
-  imgSearch: {
-    marginTop: 13,
-    marginStart: 18,
-    width: 18,
-    height: 18,
-  },
-  search: {
-    width: '100%',
-    height: 45,
-    backgroundColor: '#141921',
-    borderRadius: 15,
-    marginTop: 28,
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  txtHeader: {
-    fontSize: 28,
-    fontFamily: 'Semibold',
-    color: '#fff'
-  },
-  textHeader: {
-    marginTop: 31,
-  },
-  imgHeader: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-  },
-  header: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  Container: {
-    backgroundColor: '#0C0F14',
-    width: '100%',
-    height: '100%',
-    paddingHorizontal: 30,
-    paddingVertical: 20,
-  }
+    },
+    titleSp: {
+        width: 83,
+        height: 23,
+        color: 'white',
+        fontSize: 9,
+        right: 19,
+        marginTop: 5
+    },
+    nameSp: {
+        color: 'white',
+        width: 95,
+        height: 22,
+        flexDirection: 'column',
+        right: 15,
+        top: 5,
+        fontFamily: "Poppins",
+        fontSize: 13,
+        fontWeight: '400',
+        fontStyle: 'normal',
+        lineHeight: 20,
+        marginTop: 120
+    },
+    image: {
+        width: 136,
+        height: 136,
+        borderRadius: 15,
+        marginHorizontal: 12,
+        marginVertical: 12,
+        position: "absolute",
+    },
+    sp: {
+        width: 149,
+        height: 245,
+        backgroundColor: '#141921',
+        alignItems: 'center',
+        borderRadius: 15,
+        marginRight: 22
+    },
+    scrollContainer2: {
+        width: '100%',
+        height: 245,
+        backgroundColor: '#fff',
+        marginTop: 19
+    },
+    beanText: {
+        color: 'white',
+        fontSize: 16,
+        lineHeight: 20,
+        fontFamily: 'Poppins',
+        fontWeight: '500',
+        fontStyle: 'normal'
+    },
+    beanContainer: {
+        marginTop: 24,
+        width: 108,
+        height: 20
+    },
+    scrollContainer: {
+        width: '100%',
+        height: 245,
+        marginTop: 22,
+    },
+    search: {
+        paddingLeft: 19,
+        fontFamily: 'Poppins',
+        lineHeight: 20,
+        color: 'white',
+        fontSize: 10
+    },
+    searchContainer: {
+        marginTop: 28,
+        width: 330,
+        height: 45,
+        backgroundColor: '#141921',
+        roundedCorners: true,
+        flexDirection: 'row',
+        borderRadius: 15,
+        alignItems: 'center', // Đặt hình ảnh và văn bản vào giữa theo chiều dọc
+        paddingLeft: 18,
+        fontWeight: '500'
+    },
+    text: {
+        fontSize: 28,
+        lineHeight: 36,
+        fontFamily: 'Poppins',
+        fontWeight: '600',
+        color: '#fff'
+    },
+    textBar: {
+        width: 195,
+        height: 72,
+        marginTop: 31
+    },
+    bar_navigation: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    container: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#0C0F14',
+        paddingStart: 30,
+        paddingTop: 21,
+        paddingEnd: 30
+    },
 })

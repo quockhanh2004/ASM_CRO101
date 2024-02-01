@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native'
-import React, { useState } from 'react'
-import AxiosInstance from '../helper/AxiosInstance';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert ,ToastAndroid} from 'react-native'
+import React, { useContext, useState } from 'react'
+import AxiosInstance from '../helpers/AxiosInstance';
 
 const Register = (props) => {
   const { navigation } = props;
@@ -20,29 +20,40 @@ const Register = (props) => {
   }
 
   const register = async () => {
-    if (password === confirmPassword){
-      try {
-        const body = {
-          email: email,
-          password: password,
-          name: name,
-        }
-
-        const response = await AxiosInstance().post('/users/register', body);
-        console.log(response);
-        if (response.status == true){
-          Alert.alert('Đăng ký thành công');
-          navigation.goBack();
-        } else{
-          Alert.alert('Đăng ký thất bại');
-        }
-
-      } catch (error) {
-        console.log('Đăng ký lỗi' + error);
-        Alert.alert('Đăng ký lỗi' + error);
+    try {
+      // bắt lỗi xài regex
+      // kiểm tra password và confirmPassword có giống nhau hay không
+      if (password !== confirmPassword) {
+        ToastAndroid.showWithGravityAndOffset(
+          'Mật khẩu nhập lại không giống nhau',
+          ToastAndroid.LONG,
+          ToastAndroid.BOTTOM,
+          25,
+          50,
+        )
+        return;
       }
+      const body = {
+        email: email,
+        password: password,
+        name: name,
+      }
+      const response = await AxiosInstance()
+                            .post('/users/register', body);
+
+      ToastAndroid.showWithGravityAndOffset(
+        'Đăng ký thành công',
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50,
+      )
+       // Điều hướng quay lại trang đăng nhập
+    navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Đăng ký có lỗi');
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -63,9 +74,8 @@ const Register = (props) => {
           placeholder="Name"
           placeholderTextColor="#828282"
           autoCapitalize="characters"
-          autoCorrect={true}
+          autoCorrect={false}
           keyboardType="default"
-          value={name}
           onChangeText={setName}
         />
       </View>
@@ -74,10 +84,7 @@ const Register = (props) => {
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#828282"
-          autoCapitalize="none"
-          autoCorrect={false}
           keyboardType="email-address"
-          value={email}
           onChangeText={setEmail}
         />
       </View>
@@ -87,10 +94,7 @@ const Register = (props) => {
           style={styles.input}
           placeholder="Password"
           placeholderTextColor="#828282"
-          autoCapitalize="none"
-          autoCorrect={false}
           secureTextEntry={secureTextEntry}
-          value={password}
           onChangeText={setPassword}
         />
         <TouchableOpacity
@@ -107,10 +111,7 @@ const Register = (props) => {
           style={styles.input}
           placeholder="Re-type password"
           placeholderTextColor="#828282"
-          autoCapitalize="none"
-          autoCorrect={false}
           secureTextEntry={ResecureTextEntry}
-          value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
         <TouchableOpacity
