@@ -1,13 +1,18 @@
-import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Image, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Image, TextInput, ToastAndroid } from 'react-native'
+import React, { useState, useContext } from 'react'
+
+import { AppContext } from '../AppContext';
+import AxiosInstance from '../../helper/AxiosInstance';
 
 const Personal = (props) => {
-
+  const { user, setUser } = useContext(AppContext);
+  console.log(user.name);
   const { navigation } = props;
   const [secureTextEntry, secure] = useState(true);
   const [ResecureTextEntry, setResecureTextEntry] = useState(true);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+
+  const [name, setName] = useState(user?.name);
+  const [email, setEmail] = useState(user?.email);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -17,6 +22,53 @@ const Personal = (props) => {
 
   const showPasswordConfirm = () => {
     setResecureTextEntry(!ResecureTextEntry);
+  }
+
+  const changeInfo = async () => {
+    if (password === confirmPassword) {
+      try {
+        const response = await AxiosInstance().post(`/users/update-profile`,
+          {
+            "email": email,
+            "password": password,
+            "name": name
+          }
+        );
+
+        if (response.status == true) {
+          ToastAndroid.showWithGravityAndOffset(
+            'Update info success',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM,
+            25,
+            50,
+          );
+          setUser({
+            name: name,
+          });
+          console.log(user);
+          navigation.navigate('Home');
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Update info fail',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM,
+            25,
+            50,
+          );
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Password not match',
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50,
+      );
+    }
   }
 
   return (
@@ -40,6 +92,8 @@ const Personal = (props) => {
               autoCapitalize="characters"
               autoCorrect={true}
               keyboardType="default"
+              value={name}
+              onChangeText={setName}
             />
           </View>
           <View style={styles.inputContainer}>
@@ -49,7 +103,9 @@ const Personal = (props) => {
               placeholderTextColor="#828282"
               autoCapitalize="none"
               autoCorrect={false}
+              editable={false}
               keyboardType="email-address"
+              value={user?.email}
             />
           </View>
 
@@ -61,6 +117,8 @@ const Personal = (props) => {
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry={secureTextEntry}
+              value={password}
+              onChangeText={setPassword}
             />
             <TouchableOpacity
               style={styles.eyeImg}
@@ -79,6 +137,8 @@ const Personal = (props) => {
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry={ResecureTextEntry}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
             <TouchableOpacity
               style={styles.eyeImg}
@@ -92,7 +152,7 @@ const Personal = (props) => {
 
           <TouchableOpacity
             style={[styles.buttonContainer, { marginTop: 41 }]}
-            onPress={null} >
+            onPress={changeInfo} >
             <Text style={styles.buttonText}>Save</Text>
           </TouchableOpacity>
         </View>

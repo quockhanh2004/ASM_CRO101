@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, FlatList } from 'react-native'
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useMemo } from 'react'
 import { AppContext } from '../AppContext'
 import AxiosInstance from '../../helper/AxiosInstance'
 
@@ -7,7 +7,7 @@ const Cart = () => {
   const { cart } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   console.log(products);
-  useEffect(() => {
+  useMemo(() => {
     const fetchData = async () => {
       // console.log(cart);
       try {

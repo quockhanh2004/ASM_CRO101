@@ -12,6 +12,7 @@ import Notification from './tabs/Notification'
 
 const tabScreenOptions = ({ route }) => {
     const { cart } = useContext(AppContext);
+    const { favorite } = useContext(AppContext);
     // console.log(cart);
     return {
         headerShown: false,
@@ -30,7 +31,7 @@ const tabScreenOptions = ({ route }) => {
                     return (
                         <View>
                             <Image source={require('../../../assets/images/ic_cart.png')} />
-                            <Text style={styles.Cart}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
+                            <Text style={styles.number}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
                         </View>
 
                     );
@@ -38,16 +39,22 @@ const tabScreenOptions = ({ route }) => {
                 return (
                     <View>
                         <Image source={require('../../../assets/images/ic_cart_default.png')} />
-                        <Text style={styles.Cart}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
+                        <Text style={styles.number}>{cart.reduce((total, item) => total + item.number, 0)}</Text>
                     </View>
 
                 );
             }
             else if (route.name == 'Favorite') {
                 if (focused) {
-                    return <Image source={require('../../../assets/images/ic_favorite.png')} />
+                    return <View>
+                    <Image source={require('../../../assets/images/ic_favorite.png')} />
+                    <Text style={styles.number}>{favorite.length}</Text>
+                </View>
                 }
-                return <Image source={require('../../../assets/images/ic_favorite_default.png')} />
+                return <View>
+                <Image source={require('../../../assets/images/ic_favorite_default.png')} />
+                <Text style={styles.number}>{favorite.length}</Text>
+            </View>
             } else if (route.name == 'Notification') {
                 if (focused) {
                     return <Image source={require('../../../assets/images/ic_notification.png')} />
@@ -95,8 +102,8 @@ const MainTabNavigation = () => {
 }
 
 // stacks
-import Detail from './stacks/Detail'
 import Payment from './stacks/Payment'
+import Detail from './stacks/Detail'
 import Settings from './stacks/Settings'
 import Personal from './stacks/Personal'
 const Stack = createNativeStackNavigator()
@@ -116,11 +123,12 @@ const MainStackNavigation = () => {
 export default MainStackNavigation
 
 const styles = StyleSheet.create({
-    Cart: {
+    number: {
         backgroundColor: 'red',
         width: 10,
         height: 10,
         borderRadius: 4,
+        position: 'absolute',
         position: 'absolute',
         bottom: 0,
         right: 0,

@@ -3,6 +3,45 @@ import React, { useState, useEffect, useCallback, useContext } from 'react'
 import AxiosInstance from '../../helper/AxiosInstance'
 import ItemProduct from '../../item/ItemProduct'
 import { AppContext } from '../AppContext'
+
+
+
+const beans = [
+  {
+    _id: '',
+    "category": "65b07ddcfc13ae4836b4cb08",
+    "description": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.",
+    name: 'Robusta Beans',
+
+    image: '../../../assets/images/robustaBean.jpg',
+    price: 4.20,
+    rating: 4.5,
+    "voting": 84
+  },
+  {
+    _id: '',
+    "category": "65b07ddcfc13ae4836b4cb08",
+    "description": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.",
+    name: 'Cappuccino',
+ 
+    image: '../../../assets/images/robustaBean.jpg',
+    price: 4.2,
+    rating: 0,
+    "voting": 84
+  },
+  {
+    _id: '',
+    "category": "65b07ddcfc13ae4836b4cb08",
+    "description": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.",
+    name: 'Espresso',
+   
+    image: '../../../assets/images/robustaBean.jpg',
+    price: 4.2,
+    rating: 0,
+    "voting": 84
+  },
+];
+
 const Home = (props) => {
   const { navigation } = props;
   const [isSearch, setIsSearch] = useState(false);

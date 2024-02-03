@@ -5,7 +5,9 @@ import AxiosInstance from '../helper/AxiosInstance';
 
 
 const Login = (props) => {
-    const { isLogin, setIsLogin } = useContext(AppContext)
+    const { isLogin, setIsLogin } = useContext(AppContext);
+    const {history, setHistory} = useContext(AppContext);
+    const {user, setUser} = useContext(AppContext)
     const [secureTextEntry, secure] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -63,6 +65,9 @@ const Login = (props) => {
             
                 if (response.status) {
                     setIsLogin(true);
+                    setHistory(response.user.carts);
+                    setUser(response.user);
+                    // console.log(history); 
                 } else {
                     Alert.alert('Tài khoản hoặc mật khẩu sai');
                 }
