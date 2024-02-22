@@ -1,20 +1,22 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, Image } from 'react-native'
 import React, { useContext, useState, useEffect, useMemo } from 'react'
 import { AppContext } from '../AppContext'
 import AxiosInstance from '../../helper/AxiosInstance'
+import LinearGradient from 'react-native-linear-gradient'
+import ItemFavorite from '../../item/ItemFavorite'
 
-const Favorite = () => {
+const Favorite = (props) => {
+  const { navigation } = props;
   const { favorite } = useContext(AppContext);
   const [products, setProducts] = useState([]);
-  console.log(products);
+
   useMemo(() => {
     const fetchData = async () => {
       try {
         // Tạo một mảng các promise từ các yêu cầu API
         const promises = favorite.map(async (item) => {
           const response = await AxiosInstance().get(`/products/${item}`);
-          // console.log(response.product);
-          return { item: response.product, number: item.number};
+          return response.product;
         });
 
         // Chờ tất cả các promise hoàn thành
@@ -32,15 +34,28 @@ const Favorite = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Favorite Items:</Text>
-      <View>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.btnMenu}
+          onPress={() => navigation.navigate('Settings')}
+        >
+          <Image style={styles.imgHeader} source={require('../../../../assets/images/ic_menu.png')} />
+        </TouchableOpacity>
+        <Text style={styles.txtHeader}>Favorite</Text>
+        <TouchableOpacity
+          style={styles.btnMenu}
+          onPress={() => navigation.navigate('Personal')}
+        >
+          <Image style={styles.imgHeader} source={require('../../../../assets/images/ic_user.png')} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.list}>
         <FlatList
+          style={styles.list}
           data={products}
-          renderItem={({ item }) => (
-            <View style={styles.productContainer}>
-              <Text style={{ color: '#fff' }}>name: {item?.item.name}</Text>
-              <Text style={{ color: '#fff' }}>price: {item?.item.price}</Text>
-            </View>
+          horizontal={false}
+          renderItem={({item, index}) => (
+            <ItemFavorite product={item} index = {index}/>
           )}
           keyExtractor={(item, index) => index.toString()}
         />
@@ -50,6 +65,32 @@ const Favorite = () => {
 };
 
 const styles = StyleSheet.create({
+  list: {
+    padding: 10,
+    marginTop: 10,
+    width: '100%',
+    height: 'auto',
+  },
+  txtHeader: {
+    fontSize: 20,
+    fontFamily: 'Semibold',
+    color: '#fff'
+  },
+  textHeader: {
+    marginTop: 31,
+  },
+  imgHeader: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+  },
+  header: {
+    width: '100%',
+    height: 'auto',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   productContainer: {
     marginBottom: 10,
     padding: 10,

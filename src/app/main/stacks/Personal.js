@@ -45,6 +45,7 @@ const Personal = (props) => {
           );
           setUser({
             name: name,
+            email: email
           });
           console.log(user);
           navigation.navigate('Home');
